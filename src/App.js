@@ -2,6 +2,7 @@ import React, { useReducer } from "react";
 import { PlayerCard } from "./PlayerCard";
 import { NewModal } from "./Modal";
 import { Button } from "@chakra-ui/react";
+import { AddIcon, CloseIcon, NotAllowedIcon } from "@chakra-ui/icons";
 
 const initialState = {
   players: [],
@@ -37,6 +38,22 @@ export const App = () => {
     return "Are you sure you want to leave? You will lose all data.";
   };
 
+  const handleResetScores = () => {
+    if (window.confirm("Do you really want to reset all scores?")) {
+      dispatch({
+        type: "updateScore",
+        payload: state.players.map(player => ({
+          ...player,
+          score: 0,
+        })),
+      });
+    }
+  };
+  const handleResetApp = () => {
+    if (window.confirm("Do you really want to reset the app?")) {
+      dispatch({ type: "resetApp" });
+    }
+  };
   const handleScoreUpdate = (score, i) => {
     const players = [...state.players];
 
@@ -52,14 +69,18 @@ export const App = () => {
         <div style={styles.buttonGroup}>
           <Button
             colorScheme="whiteAlpha"
-            onClick={() => {
-              if (window.confirm("Do you really want to reset the app?")) {
-                dispatch({ type: "resetApp" });
-              }
-            }}
+            onClick={handleResetScores}
             size="sm"
           >
-            Reset
+            <NotAllowedIcon />
+          </Button>
+          <Button
+            colorScheme="whiteAlpha"
+            marginLeft="10px"
+            onClick={handleResetApp}
+            size="sm"
+          >
+            <CloseIcon />
           </Button>
           <Button
             colorScheme="whiteAlpha"
@@ -67,7 +88,7 @@ export const App = () => {
             onClick={() => dispatch({ type: "toggleModal" })}
             size="sm"
           >
-            Add Player
+            <AddIcon />
           </Button>
         </div>
       </div>
