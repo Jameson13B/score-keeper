@@ -22,6 +22,7 @@ export const PlayerCard = ({ index, onSubmit, player }) => {
         <Input
           inputMode="numeric"
           maxWidth="40px"
+          onBlur={() => score === "" && setScore(0)}
           onChange={e =>
             setScore(
               e.target.value.length ? parseInt(e.target.value) : e.target.value
