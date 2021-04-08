@@ -2,7 +2,7 @@ import React, { useReducer } from "react";
 import { PlayerCard } from "./PlayerCard";
 import { NewModal } from "./Modal";
 import { Button } from "@chakra-ui/react";
-import { AddIcon, CloseIcon, NotAllowedIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, RepeatIcon } from "@chakra-ui/icons";
 
 const initialState = {
   players: [],
@@ -17,6 +17,16 @@ const reducer = (state, action) => {
       return {
         ...state,
         players: [...state.players, action.payload],
+        showAddNewModal: false,
+      };
+    case "deletePlayer":
+      const players = state.players.filter(
+        player => player.id !== action.payload
+      );
+
+      return {
+        ...state,
+        players,
         showAddNewModal: false,
       };
     case "updateScore":
@@ -65,14 +75,14 @@ export const App = () => {
   return (
     <div style={styles.app}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Score Keeper</h1>
+        <h1 style={styles.title}>Winner Winner</h1>
         <div style={styles.buttonGroup}>
           <Button
             colorScheme="whiteAlpha"
             onClick={handleResetScores}
             size="sm"
           >
-            <NotAllowedIcon />
+            <RepeatIcon />
           </Button>
           <Button
             colorScheme="whiteAlpha"
@@ -80,7 +90,7 @@ export const App = () => {
             onClick={handleResetApp}
             size="sm"
           >
-            <CloseIcon />
+            <DeleteIcon />
           </Button>
           <Button
             colorScheme="whiteAlpha"
@@ -107,7 +117,7 @@ export const App = () => {
               player={player}
             />
           ))}
-          <h1 style={{ margin: "30px 0" }}>End Of List</h1>
+          <h1 style={{ margin: "30px 0" }}>Chicken Dinner</h1>
         </div>
       )}
 
@@ -115,6 +125,8 @@ export const App = () => {
         isOpen={state.showAddNewModal}
         onAddPlayer={player => dispatch({ type: "addPlayer", payload: player })}
         onClose={() => dispatch({ type: "toggleModal" })}
+        onDeletePlayer={id => dispatch({ type: "deletePlayer", payload: id })}
+        players={state.players}
       />
     </div>
   );
