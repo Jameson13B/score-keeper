@@ -13,31 +13,36 @@ import {
 } from "@chakra-ui/react";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
+import { db, addArray, removeArray } from "./firebase";
 
-export const NewModal = ({
-  isOpen,
-  onAddPlayer,
-  onClose,
-  onDeletePlayer,
-  players,
-}) => {
+export const NewModal = ({ code, isOpen, onClose, players }) => {
   const [name, setName] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
   const inputRef = useRef();
 
   const handleSubmit = () => {
     if (name === "") {
       setError(true);
     } else {
-      onAddPlayer({ name, score: 0, id: players.length - 1 });
-      setName("");
-      setError(false);
+      db.collection("score-keeper-rooms")
+        .doc(code)
+        .update({ players: addArray({ name, score: 0 }) })
+        .then(() => {
+          setName("");
+          setError(null);
+        });
     }
   };
-  const handleDeletePlayer = id => {
-    onDeletePlayer(id);
-    setName("");
-    setError(false);
+  const handleDeletePlayer = delPlayer => {
+    db.collection("score-keeper-rooms")
+      .doc(code)
+      .update({
+        players: removeArray({ name: delPlayer.name, score: delPlayer.score }),
+      })
+      .then(() => {
+        setName("");
+        setError(null);
+      });
   };
 
   return (
@@ -81,14 +86,14 @@ export const NewModal = ({
               </Thead>
               <Tbody>
                 {players.map(player => (
-                  <Tr key={player.id}>
+                  <Tr key={player.name}>
                     <Td>{player.name}</Td>
                     <Td>
                       <IconButton
                         aria-label="Delete Player"
                         color="red"
                         icon={<DeleteIcon />}
-                        onClick={() => handleDeletePlayer(player.id)}
+                        onClick={() => handleDeletePlayer(player)}
                         variant="ghost"
                       />
                     </Td>

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { IconButton, Input } from "@chakra-ui/react";
 import { AddIcon, CheckIcon, MinusIcon } from "@chakra-ui/icons";
+import { db, addArray, removeArray } from "./firebase";
 
-export const PlayerCard = ({ index, onSubmit, player }) => {
+export const PlayerCard = ({ code, player }) => {
   const styles = getStyles();
   const [score, setScore] = useState(0);
 
@@ -46,7 +47,20 @@ export const PlayerCard = ({ index, onSubmit, player }) => {
           icon={<CheckIcon />}
           ml={15}
           onClick={() => {
-            onSubmit(player.score + score, index);
+            const room = db.collection("score-keeper-rooms").doc(code);
+
+            room.update({
+              players: removeArray({
+                name: player.name,
+                score: player.score,
+              }),
+            });
+            room.update({
+              players: addArray({
+                name: player.name,
+                score: player.score + score,
+              }),
+            });
             setScore(0);
           }}
           size="sm"
