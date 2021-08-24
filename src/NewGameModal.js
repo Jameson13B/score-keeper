@@ -54,7 +54,7 @@ export const NewGameModal = ({ isOpen, onSuccess, onClose }) => {
             onKeyPress={e => {
               if (e.key === "Enter") onSuccess(code);
             }}
-            placeholder="Player's Name Required"
+            placeholder="Room Code(4 digits)"
             ref={inputRef}
             textAlign="center"
             value={code}
