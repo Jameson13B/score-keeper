@@ -3,7 +3,7 @@ import { IconButton, Input } from "@chakra-ui/react";
 import { AddIcon, CheckIcon, MinusIcon } from "@chakra-ui/icons";
 import { db, addArray, removeArray } from "./firebase";
 
-export const PlayerCard = ({ code, player }) => {
+export const PlayerCard = ({ code, player, players }) => {
   const styles = getStyles();
   const [score, setScore] = useState(0);
 
@@ -47,21 +47,17 @@ export const PlayerCard = ({ code, player }) => {
           icon={<CheckIcon />}
           ml={15}
           onClick={() => {
-            const room = db.collection("score-keeper-rooms").doc(code);
-
-            room.update({
-              players: removeArray({
-                name: player.name,
-                score: player.score,
-              }),
+            const newPlayers = players.map(plyer => {
+              if (plyer.name === player.name) {
+                return { ...plyer, score: plyer.score + score };
+              } else {
+                return plyer;
+              }
             });
-            room.update({
-              players: addArray({
-                name: player.name,
-                score: player.score + score,
-              }),
-            });
-            setScore(0);
+            db.collection("score-keeper-rooms")
+              .doc(code)
+              .update({ players: newPlayers })
+              .then(() => setScore(0));
           }}
           size="sm"
         />
