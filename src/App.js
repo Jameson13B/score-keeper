@@ -26,13 +26,9 @@ export const App = () => {
 
   const handleResetScores = () => {
     if (window.confirm("Do you really want to reset all scores?")) {
-      dispatch({
-        type: "updateScore",
-        payload: state.players.map(player => ({
-          ...player,
-          score: 0,
-        })),
-      });
+      const players = state.players.map(player => ({ ...player, score: 0 }));
+
+      db.collection("score-keeper-rooms").doc(state.code).update({ players });
     }
   };
   const handleResetApp = () => {
@@ -95,7 +91,12 @@ export const App = () => {
       {state.players.length > 0 && (
         <div style={styles.list}>
           {state.players.map((player, i) => (
-            <PlayerCard code={state.code} key={i} player={player} />
+            <PlayerCard
+              code={state.code}
+              key={i}
+              player={player}
+              players={state.players}
+            />
           ))}
           <h1 style={{ margin: "30px 0" }}>Chicken Dinner</h1>
         </div>
