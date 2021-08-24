@@ -24,12 +24,6 @@ export const App = () => {
     }
   }, [state.code]);
 
-  // Check before navigating away to prevent accidentally losing data
-  window.onbeforeunload = e => {
-    e.preventDefault();
-    return "Are you sure you want to leave? You will lose all data.";
-  };
-
   const handleResetScores = () => {
     if (window.confirm("Do you really want to reset all scores?")) {
       dispatch({
@@ -56,7 +50,16 @@ export const App = () => {
     <div style={styles.app}>
       <div style={styles.header}>
         <h1 style={styles.title}>Winner Winner</h1>
-        <h3 style={styles.code}>Code: {state.code}</h3>
+        <h3
+          onClick={() => {
+            if (window.confirm("Do you really want to reset the app?")) {
+              dispatch({ type: "resetApp" });
+            }
+          }}
+          style={styles.code}
+        >
+          Code: {state.code}
+        </h3>
 
         <div style={styles.buttonGroup}>
           <Button
