@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { IconButton, Input } from "@chakra-ui/react";
 import { AddIcon, CheckIcon, MinusIcon } from "@chakra-ui/icons";
-import { db, addArray, removeArray } from "./firebase";
+import { db } from "./firebase";
 
 export const PlayerCard = ({ code, player, players }) => {
   const styles = getStyles();
