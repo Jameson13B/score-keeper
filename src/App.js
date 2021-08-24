@@ -1,46 +1,28 @@
-import React, { useReducer } from "react";
+import React, { useEffect, useReducer } from "react";
 import { PlayerCard } from "./PlayerCard";
 import { NewModal } from "./Modal";
+import { NewGameModal } from "./NewGameModal";
 import { Button } from "@chakra-ui/react";
-import { AddIcon, DeleteIcon, RepeatIcon } from "@chakra-ui/icons";
-
-const initialState = {
-  players: [],
-  showAddNewModal: false,
-};
-
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "toggleModal":
-      return { ...state, showAddNewModal: !state.showAddNewModal };
-    case "addPlayer":
-      return {
-        ...state,
-        players: [...state.players, action.payload],
-        showAddNewModal: false,
-      };
-    case "deletePlayer":
-      const players = state.players.filter(
-        player => player.id !== action.payload
-      );
-
-      return {
-        ...state,
-        players,
-        showAddNewModal: false,
-      };
-    case "updateScore":
-      return { ...state, players: action.payload };
-    case "resetApp":
-      return initialState;
-    default:
-      return state;
-  }
-};
+import { DeleteIcon, EditIcon, RepeatIcon } from "@chakra-ui/icons";
+import { db } from "./firebase";
+import { initialState, reducer } from "./State";
 
 export const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const styles = getStyles();
+
+  useEffect(() => {
+    if (state.code) {
+      db.collection("score-keeper-rooms")
+        .doc(state.code)
+        .onSnapshot(res => {
+          dispatch({
+            type: "loadRoom",
+            payload: res.exists ? res.data().players : [],
+          });
+        });
+    }
+  }, [state.code]);
 
   // Check before navigating away to prevent accidentally losing data
   window.onbeforeunload = e => {
@@ -61,21 +43,21 @@ export const App = () => {
   };
   const handleResetApp = () => {
     if (window.confirm("Do you really want to reset the app?")) {
-      dispatch({ type: "resetApp" });
+      db.collection("score-keeper-rooms")
+        .doc(state.code)
+        .delete()
+        .then(() => {
+          dispatch({ type: "resetApp" });
+        });
     }
-  };
-  const handleScoreUpdate = (score, i) => {
-    const players = [...state.players];
-
-    players[i] = { ...state.players[i], score };
-
-    dispatch({ type: "updateScore", payload: players });
   };
 
   return (
     <div style={styles.app}>
       <div style={styles.header}>
         <h1 style={styles.title}>Winner Winner</h1>
+        <h3 style={styles.code}>Code: {state.code}</h3>
+
         <div style={styles.buttonGroup}>
           <Button
             colorScheme="whiteAlpha"
@@ -95,10 +77,10 @@ export const App = () => {
           <Button
             colorScheme="whiteAlpha"
             marginLeft="10px"
-            onClick={() => dispatch({ type: "toggleModal" })}
+            onClick={() => dispatch({ type: "togglePlayerModal" })}
             size="sm"
           >
-            <AddIcon />
+            <EditIcon />
           </Button>
         </div>
       </div>
@@ -110,23 +92,22 @@ export const App = () => {
       {state.players.length > 0 && (
         <div style={styles.list}>
           {state.players.map((player, i) => (
-            <PlayerCard
-              index={i}
-              key={i}
-              onSubmit={handleScoreUpdate}
-              player={player}
-            />
+            <PlayerCard code={state.code} key={i} player={player} />
           ))}
           <h1 style={{ margin: "30px 0" }}>Chicken Dinner</h1>
         </div>
       )}
 
       <NewModal
+        code={state.code}
         isOpen={state.showAddNewModal}
-        onAddPlayer={player => dispatch({ type: "addPlayer", payload: player })}
-        onClose={() => dispatch({ type: "toggleModal" })}
-        onDeletePlayer={id => dispatch({ type: "deletePlayer", payload: id })}
+        onClose={() => dispatch({ type: "togglePlayerModal" })}
         players={state.players}
+      />
+      <NewGameModal
+        isOpen={state.showNewGameModal}
+        onSuccess={code => dispatch({ type: "setCode", payload: code })}
+        onClose={() => dispatch({ type: "toggleGameModal" })}
       />
     </div>
   );
@@ -148,6 +129,12 @@ const getStyles = () => ({
   title: {
     fontSize: 25,
     fontWeight: "bold",
+  },
+  code: {
+    fontSize: 14,
+    fontWeight: "bold",
+    fontStyle: "italic",
+    marginLeft: 15,
   },
   buttonGroup: {
     display: "flex",
